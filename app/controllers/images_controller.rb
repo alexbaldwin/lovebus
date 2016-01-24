@@ -4,7 +4,7 @@ class ImagesController < ApplicationController
   # GET /images
   # GET /images.json
   def index
-    @images = Image.all.order(velocity: :desc).limit(100)
+    @images = Image.where(published: false).order(velocity: :desc).limit(100)
   end
 
   # GET /images/1

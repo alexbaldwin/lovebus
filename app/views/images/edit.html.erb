@@ -1,6 +1,12 @@
+
+<div class="container bg-white p4">
 <h1>Editing Image</h1>
 
+  <%= image_tag(@image.media_url) %>
+    <%= link_to @image.blog_name, @image.post_url, class: 'block btn btn-outline-regular' %>
+    <%= link_to 'Destroy', image_path(@image),  method: :delete, data: { confirm: 'Are you sure?' }, class: 'block btn regular btn-outline red' %>
 <%= render 'form' %>
 
 <%= link_to 'Show', @image %> |
 <%= link_to 'Back', images_path %>
+</div>
