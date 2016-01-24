@@ -31,6 +31,7 @@ namespace :spider do
             result = JSON.parse(buffer)
             results = result['response']
           else
+            page = page + 1
             next
           end
 
