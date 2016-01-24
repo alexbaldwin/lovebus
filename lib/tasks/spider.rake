@@ -1,7 +1,3 @@
-require 'json'
-require 'open-uri'
-require 'uri'
-
 namespace :spider do
   desc "Updates ratings"
   task update_score: :environment do
@@ -12,32 +8,32 @@ namespace :spider do
   end
   desc "Crawls tumblr to save new images"
   task tumblr_import: :environment do
+
     def find_images(search_tag)
-      api_key = ENV['TUMBLR_API_KEY']
       p search_tag
       unless Obscenity.profane?(search_tag)
+        url = 'https://api.tumblr.com/v2/'
+        tumblr_api_key = ENV['TUMBLR_API_KEY']
+    
+        conn = Faraday.new(url: url) do |faraday|
+          faraday.adapter Faraday.default_adapter
+          faraday.response :json
+        end
+
         page = 0
         last_time = ''
-        until page >= 40
-          tumblr_api_key = "&api_key=#{api_key}"
-          tag_url = 'https://api.tumblr.com/v2/tagged?tag='
-          limit = '&limit=20'
-          before = "&before=#{last_time}"
-          tag = URI.escape(search_tag)
 
-          url = tag_url + tag + tumblr_api_key + limit + before
-          res = Faraday.get(url)
-          if res.status.to_s == '200'
-            buffer = open(url).read
-            result = JSON.parse(buffer)
-            results = result['response']
+        until page >= 40
+          tag_response = conn.get('tagged', tag: search_tag, limit: '20', before: last_time, api_key: tumblr_api_key)
+          if tag_response.status.to_s == '200'
+            results = tag_response.body['response']
           else
             page = page + 1
             next
           end
 
           if !results.empty?
-            last_time = results.last['timestamp'].to_i
+            last_time = results.last['timestamp'].to_s
             results.keep_if {|p| p['type'] == 'photo'}
             results.keep_if {|p| p['note_count'].to_i >= 3}
 
@@ -47,15 +43,12 @@ namespace :spider do
               post['tags'].each {|t| tag_text << "#{t} "}
               sucks = Obscenity.offensive(tag_text)
               if sucks.count == 0 
-                user_url = "https://api.tumblr.com/v2/blog/#{post['blog_name']}.tumblr.com/info?api_key=#{api_key}"
-                res = Faraday.get(user_url)
-                if res.status.to_s == '200'
-                  buffer = open(user_url).read
-                  user_json = JSON.parse(buffer)
+                user_response = conn.get("blog/#{post['blog_name']}.tumblr.com/info", api_key: tumblr_api_key)
+                if user_response.status.to_s == '200'
+                  user = user_response.body['response']['blog']
                 else
                   next
                 end
-                user = user_json['response']['blog']
                 user_posts = user['posts'].to_i
                 user_likes = user['likes'].to_i
                 user_ratio = (user_likes.to_f / (user_posts.to_f + 1)).to_i
