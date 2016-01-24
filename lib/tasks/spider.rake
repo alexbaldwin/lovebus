@@ -11,7 +11,7 @@ namespace :spider do
 
     def find_images(search_tag)
       p search_tag
-      current_media_ids = Image.all.collect {|i| i.media_id}
+      current_media_ids = Image.all.collect {|i| i.media_id.to_i}
 
       unless Obscenity.profane?(search_tag)
         url = 'https://api.tumblr.com/v2/'
@@ -23,24 +23,27 @@ namespace :spider do
         end
 
         page = 0
+        page_limit = 20
         last_time = ''
 
-        until page >= 40
+        until page >= page_limit
+          p page
+          page = page + 1
           tag_response = conn.get('tagged', tag: search_tag, limit: '20', before: last_time, api_key: tumblr_api_key)
           if tag_response.status.to_s == '200'
             results = tag_response.body['response']
+            last_time = results.last['timestamp'].to_s
 
-            new_media_ids = results.collect{|r| r['media_id']}
-            unless !(new_media_ids & current_media_ids).empty?
+            new_media_ids = results.collect{|r| r['id'].to_i}
+            if !(new_media_ids & current_media_ids).empty?
+              page = page_limit
               next
             end
           else
-            page = page + 1
             next
           end
 
           if !results.empty?
-            last_time = results.last['timestamp'].to_s
             results.keep_if {|p| p['type'] == 'photo'}
             results.keep_if {|p| p['note_count'].to_i >= 3}
 
@@ -85,7 +88,6 @@ namespace :spider do
                 end
               end
             end
-            page = page + 1
           end
         end
       end
