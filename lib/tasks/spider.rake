@@ -13,12 +13,13 @@ namespace :spider do
   desc "Crawls tumblr to save new images"
   task tumblr_import: :environment do
     def find_images(search_tag)
+      api_key = ENV['TUMBLR_API_KEY']
       p search_tag
       unless Obscenity.profane?(search_tag)
         page = 0
         last_time = ''
         until page >= 40
-          tumblr_api_key = '&api_key=***REMOVED***'
+          tumblr_api_key = "&api_key=#{api_key}"
           tag_url = 'https://api.tumblr.com/v2/tagged?tag='
           limit = '&limit=20'
           before = "&before=#{last_time}"
@@ -46,7 +47,7 @@ namespace :spider do
               post['tags'].each {|t| tag_text << "#{t} "}
               sucks = Obscenity.offensive(tag_text)
               if sucks.count == 0 
-                user_url = "https://api.tumblr.com/v2/blog/#{post['blog_name']}.tumblr.com/info?api_key=***REMOVED***"
+                user_url = "https://api.tumblr.com/v2/blog/#{post['blog_name']}.tumblr.com/info?api_key=#{api_key}"
                 res = Faraday.get(user_url)
                 if res.status.to_s == '200'
                   buffer = open(user_url).read
