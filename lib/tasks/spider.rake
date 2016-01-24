@@ -2,10 +2,7 @@ namespace :spider do
   desc "Updates ratings"
   task update_score: :environment do
     Image.all.each do |i|
-      note_count = i.note_count.to_f
-      rate = (note_count / ((Time.now.utc - i.posted_at).to_f / 3600)).to_f
-      velocity = rate * note_count
-      i.velocity = velocity
+      i.velocity = i.score(i)
       i.save
     end
   end
@@ -26,7 +23,7 @@ namespace :spider do
         end
 
         page = 0
-        page_limit = ENV['TUMBLR_PAGE_LIMIT'].to_i || 5
+        page_limit = ENV['TUMBLR_PAGE_LIMIT'].to_i
         last_time = ''
 
         until page >= page_limit
@@ -80,7 +77,6 @@ namespace :spider do
                 if user_ratio >= 10
                   posted_at = DateTime.parse(post['date'].to_s)
                   note_count = post['note_count'].to_i
-                  velocity = (note_count.to_f / (Time.now.utc - posted_at).to_f / 3600).to_f
                   i = Image.new(
                     :note_count => note_count,
                     :media_id => post['id'].to_s,
@@ -88,7 +84,7 @@ namespace :spider do
                     :blog_name => post['blog_name'].to_s,
                     :media_url => post['photos'][0]['original_size']['url'].to_s,
                     :posted_at => posted_at,
-                    :velocity => velocity
+                    :velocity => 0
                   )
                   post['tags'].first(5).each do |t|
                     tag_name = t.to_s
@@ -135,5 +131,7 @@ namespace :spider do
         find_images(t.name)
       end
     end
+
+    Rake::Task["spider:update_score"].execute
   end
 end
