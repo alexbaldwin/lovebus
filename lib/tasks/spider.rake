@@ -97,7 +97,6 @@ namespace :spider do
       'space',
       'architecture',
       'retro',
-      'typography',
       'minimal',
       'design',
       'geometric',
