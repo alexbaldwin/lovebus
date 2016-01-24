@@ -11,6 +11,8 @@ namespace :spider do
 
     def find_images(search_tag)
       p search_tag
+      current_media_ids = Image.all.collect {|i| i.media_id}
+
       unless Obscenity.profane?(search_tag)
         url = 'https://api.tumblr.com/v2/'
         tumblr_api_key = ENV['TUMBLR_API_KEY']
@@ -27,6 +29,11 @@ namespace :spider do
           tag_response = conn.get('tagged', tag: search_tag, limit: '20', before: last_time, api_key: tumblr_api_key)
           if tag_response.status.to_s == '200'
             results = tag_response.body['response']
+
+            new_media_ids = results.collect{|r| r['media_id']}
+            unless !(new_media_ids & current_media_ids).empty?
+              next
+            end
           else
             page = page + 1
             next
