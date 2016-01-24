@@ -4,7 +4,7 @@
 <div class="container">
 <% @images.each do |image| %>
 <div class="center white left bg-gray"
-  style="width: 100%; height: 100vh; padding: 4rem 0; background-position: center; center; background-size: cover; background-repeat: no-repeat; background-image: url(<%= image.media_url %>)">
+  style="width: 100%; height: 20vh; padding: 4rem 0; background-position: center; center; background-size: cover; background-repeat: no-repeat; background-image: url(<%= image.media_url %>)">
 
     <div class="right p2">
     <%= link_to image.blog_name, image.post_url, class: 'btn btn-outline-regular' %>

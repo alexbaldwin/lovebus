@@ -33,18 +33,10 @@ namespace :spider do
           if tag_response.status.to_s == '200'
             results = tag_response.body['response']
 
-            # Set the before for the next page
-            last_time = results.last['timestamp'].to_s
 
-            # Check for duplicates
-            new_media_ids = results.collect{|r| r['id'].to_i}
-            if !(new_media_ids & current_media_ids).empty?
-              page = page_limit
-              next
-            end
-
-          # Start the next loop if the API call fails
+          # Kill the subject if the API call fails
           else
+            page = page_limit
             next
           end
 
@@ -53,6 +45,16 @@ namespace :spider do
             page = page_limit
             next
           else
+            # Check for duplicates
+            new_media_ids = results.collect{|r| r['id'].to_i}
+            if !(new_media_ids & current_media_ids).empty?
+              page = page_limit
+              next
+            end
+
+            # Set the before for the next page
+            last_time = results.last['timestamp'].to_s
+
             results.keep_if {|p| p['type'] == 'photo'}
             results.keep_if {|p| p['note_count'].to_i >= 1}
 
