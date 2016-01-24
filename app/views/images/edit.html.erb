@@ -1,6 +1,6 @@
 
 <div class="container bg-white p4">
-<h1>Editing Image</h1>
+  <h1><%= @image.tag_list %></h1>
 
   <%= image_tag(@image.media_url) %>
     <%= link_to @image.blog_name, @image.post_url, class: 'block btn btn-outline-regular' %>
