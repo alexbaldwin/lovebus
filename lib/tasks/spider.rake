@@ -32,20 +32,29 @@ namespace :spider do
           tag_response = conn.get('tagged', tag: search_tag, limit: '20', before: last_time, api_key: tumblr_api_key)
           if tag_response.status.to_s == '200'
             results = tag_response.body['response']
+
+            # Set the before for the next page
             last_time = results.last['timestamp'].to_s
 
+            # Check for duplicates
             new_media_ids = results.collect{|r| r['id'].to_i}
             if !(new_media_ids & current_media_ids).empty?
               page = page_limit
               next
             end
+
+          # Start the next loop if the API call fails
           else
             next
           end
 
-          if !results.empty?
+          # Make sure there's enough results before moving on
+          if results.empty?
+            page = page_limit
+            next
+          else
             results.keep_if {|p| p['type'] == 'photo'}
-            results.keep_if {|p| p['note_count'].to_i >= 3}
+            results.keep_if {|p| p['note_count'].to_i >= 1}
 
             results.each do |post|
               # p post['post_url']
@@ -63,7 +72,7 @@ namespace :spider do
                 user_likes = user['likes'].to_i
                 user_ratio = (user_likes.to_f / (user_posts.to_f + 1)).to_i
 
-                if user_ratio >= 15
+                if user_ratio >= 10
                   posted_at = DateTime.parse(post['date'].to_s)
                   note_count = post['note_count'].to_i
                   velocity = (note_count.to_f / (Time.now.utc - posted_at).to_f / 3600).to_f
@@ -102,6 +111,8 @@ namespace :spider do
       'retro',
       'minimal',
       'design',
+      'lettering',
+      'gifart',
       'geometric',
       'abstract',
       'adventure'
