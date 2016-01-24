@@ -1,4 +1,21 @@
+require 'open-uri'
+
 namespace :spider do
+  desc "Tweet"
+  task tweet: :environment do
+    image = Image.where(published: false).order(velocity: :desc).first
+    image.published = true
+    image.save
+
+    client = Twitter::REST::Client.new do |config|
+      config.consumer_key        = ENV['TWITTER_CLIENT'] 
+      config.consumer_secret     = ENV['TWITTER_CLIENT_SECRET'] 
+      config.access_token        = ENV['TWITTER_AUTH'] 
+      config.access_token_secret = ENV['TWITTER_AUTH_SECRET'] 
+    end
+
+    client.update_with_media('', open(image.media_url))
+  end
   desc "Updates ratings"
   task update_score: :environment do
     Image.all.each do |i|

@@ -7,6 +7,7 @@ gem 'acts-as-taggable-on', '~> 3.4'
 gem 'obscenity'
 gem 'faraday'
 gem 'faraday_middleware'
+gem 'twitter'
 # Use postgresql as the database for Active Record
 gem 'pg'
 # Use SCSS for stylesheets
