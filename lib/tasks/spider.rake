@@ -23,7 +23,7 @@ namespace :spider do
         end
 
         page = 0
-        page_limit = ENV['TUMBLR_PAGE_LIMIT'] || 5
+        page_limit = ENV['TUMBLR_PAGE_LIMIT'].to_i || 5
         last_time = ''
 
         until page >= page_limit
