@@ -1,0 +1,16 @@
+<p id="notice"><%= notice %></p>
+<% @images.each do |image| %>
+  <div class="flex flex-center mb2">
+    <%= link_to edit_image_path(image) do %>
+      <%= image_tag(image.media_url, width: 200, class: 'flex-none mr2') %>
+    <% end %>
+    <div class="flex-auto">
+      <%= image.note_count %>
+      <%= image.velocity %>
+      <h3><%= link_to(image.blog_name, image.post_url) %></h3>
+      <p><%= image.tag_list %></p>
+      <%= image.posted_at %>
+      <%= image.published %>
+    </div>
+  </div>
+<% end %>
