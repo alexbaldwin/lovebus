@@ -2,7 +2,10 @@ namespace :spider do
   desc "Updates ratings"
   task update_score: :environment do
     Image.all.each do |i|
-      i.velocity = (i.note_count.to_f / (Time.now.utc - i.posted_at).to_f / 3600).to_f
+      note_count = i.note_count.to_f
+      rate = (note_count / ((Time.now.utc - i.posted_at).to_f / 3600)).to_f
+      velocity = rate * note_count
+      i.velocity = velocity
       i.save
     end
   end

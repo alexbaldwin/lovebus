@@ -4,8 +4,9 @@
 <div class="container">
   <% @images.each do |image| %>
     <%= link_to edit_image_path(image)  do %>
-      <div class="center white left bg-gray"
+      <div class="center white left bg-gray relative"
         style="width: 25%; height: 16em; background-position: center; center; background-size: cover; background-repeat: no-repeat; background-image: url(<%= image.media_url %>)">
+        <h1 class="absolute bottom-0 right-0 mr2"><%= image.velocity.round(1) %></h1>
       </div>
     <% end %>
   <% end %>
