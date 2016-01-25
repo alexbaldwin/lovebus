@@ -123,7 +123,7 @@ namespace :spider do
       end
     end
 
-    top_tags = ActsAsTaggableOn::Tag.most_used(50).sample(10)
+    top_tags = ActsAsTaggableOn::Tag.most_used(100).sample(20)
     seed = [
       'black and white photography',
       'nasa',
