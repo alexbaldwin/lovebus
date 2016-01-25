@@ -14,7 +14,10 @@ namespace :spider do
       config.access_token_secret = ENV['TWITTER_AUTH_SECRET'] 
     end
 
-    client.update_with_media('', open(image.media_url))
+    tweet = client.update_with_media('', open(image.media_url))
+    p tweet
+    image.tweet = tweet.to_json
+    image.save
   end
   desc "Updates ratings"
   task update_score: :environment do
