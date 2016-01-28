@@ -123,34 +123,34 @@ namespace :spider do
       end
     end
 
-    top_tags = ActsAsTaggableOn::Tag.most_used(100).sample(20)
     seed = [
       'black and white photography',
       'nasa',
       'space',
       'architecture',
-      'retro',
       'minimal',
-      'design',
-      'lettering',
-      'gifart',
       'geometric',
-      'abstract',
-      'adventure'
+      'abstract'
     ]
 
-    if top_tags.count < 10
-      seed.each do |t|
-        find_images(t)
-      end
-    else
-      seed.each do |t|
-        find_images(t)
-      end
-      top_tags.each do |t|
-        find_images(t.name)
-      end
+    seed.each do |t|
+      find_images(t)
     end
+
+    # Too many problems with the randoms
+    # top_tags = ActsAsTaggableOn::Tag.most_used(100).sample(20)
+    # if top_tags.count < 10
+    #   seed.each do |t|
+    #     find_images(t)
+    #   end
+    # else
+    #   seed.each do |t|
+    #     find_images(t)
+    #   end
+    #   top_tags.each do |t|
+    #     find_images(t.name)
+    #   end
+    # end
 
     Rake::Task["spider:update_score"].execute
   end
