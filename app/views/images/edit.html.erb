@@ -3,9 +3,10 @@
   <h1><%= @image.tag_list %></h1>
 
   <%= image_tag(@image.media_url) %>
-    <%= link_to @image.blog_name, @image.post_url, class: 'block btn btn-outline-regular' %>
-    <%= link_to 'Destroy', image_path(@image),  method: :delete, data: { confirm: 'Are you sure?' }, class: 'block btn regular btn-outline red' %>
+    <%= link_to @image.blog_name, @image.post_url, class: 'block btn btn-outline regular' %>
+    <%= link_to 'Destroy', @image,  method: :delete, class: 'block btn btn-outline regular red' %>
 <%= render 'form' %>
+
 
 <%= link_to 'Show', @image %> |
 <%= link_to 'Back', images_path %>
