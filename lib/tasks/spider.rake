@@ -1,6 +1,124 @@
 require 'open-uri'
 
 namespace :spider do
+  desc "Find the good eggs"
+  task smart_users: :environment do
+    images = Image.where(published: true)
+    hot_users = Array.new
+    images.each do |image|
+      score = 0
+      if image.tweet?
+        score += image.tweet['retweet_count'] * 10
+        score += image.tweet['favorite_count'] * 1
+      end
+      hot_user = {}
+      hot_user['username'] = image.blog_name
+      hot_user['score'] = score
+      hot_users << hot_user
+    end
+    hot_users.delete_if {|h| h['score'] == 0}
+    hot_users.delete_if {|h| Obscenity.profane?(h['username'])}
+    hot_users.sort_by! {|h| -h['score']}
+    p hot_users
+        url = 'https://api.tumblr.com/v2/'
+        tumblr_api_key = ENV['TUMBLR_API_KEY']
+    
+        conn = Faraday.new(url: url) do |faraday|
+          faraday.adapter Faraday.default_adapter
+          faraday.response :json
+        end
+
+        # api.tumblr.com/v2/blog/{blog-identifier}/posts[/type]?api_key={key}&[optional-params=]
+        hot_users.each do |h|
+          user_response = conn.get("blog/#{h['username']}.tumblr.com/posts/photo", api_key: tumblr_api_key)
+          if user_response.status.to_s == '200'
+            posts = user_response.body['response']['posts']
+          else
+            next
+          end
+          posts.each do |post|
+                  posted_at = DateTime.parse(post['date'].to_s)
+                  note_count = post['note_count'].to_i
+                  i = Image.new(
+                    :note_count => note_count,
+                    :media_id => post['id'].to_s,
+                    :post_url => post['post_url'].to_s,
+                    :blog_name => post['blog_name'].to_s,
+                    :media_url => post['photos'][0]['original_size']['url'].to_s,
+                    :posted_at => posted_at,
+                    :velocity => 0
+                  )
+                  post['tags'].first(5).each do |t|
+                    tag_name = t.to_s
+                    if Obscenity.profane?(tag_name)
+                    else
+                      i.tag_list.add(tag_name)
+                    end
+                  end
+                  p post['post_url']
+                  i.save
+          end
+        end
+
+##             results.each do |post|
+ #             # p post['post_url']
+ #             tag_text = String.new
+ #             post['tags'].each {|t| tag_text << "#{t} "}
+ #             sucks = Obscenity.offensive(tag_text)
+ #             if sucks.count == 0 
+ #               user_response = conn.get("blog/#{post['blog_name']}.tumblr.com/info", api_key: tumblr_api_key)
+ #               if user_response.status.to_s == '200'
+ #                 user = user_response.body['response']['blog']
+ #               else
+ #                 next
+ #               end
+ #               user_posts = user['posts'].to_i
+ #               user_likes = user['likes'].to_i
+ #               user_ratio = (user_likes.to_f / (user_posts.to_f + 1)).to_i
+
+ #               if user_ratio >= 10
+ #                 posted_at = DateTime.parse(post['date'].to_s)
+ #                 note_count = post['note_count'].to_i
+ #                 i = Image.new(
+ #                   :note_count => note_count,
+ #                   :media_id => post['id'].to_s,
+ #                   :post_url => post['post_url'].to_s,
+ #                   :blog_name => post['blog_name'].to_s,
+ #                   :media_url => post['photos'][0]['original_size']['url'].to_s,
+ #                   :posted_at => posted_at,
+ #                   :velocity => 0
+ #                 )
+ #                 post['tags'].first(5).each do |t|
+ #                   tag_name = t.to_s
+ #                   if Obscenity.profane?(tag_name)
+ #                   else
+ #                     i.tag_list.add(tag_name)
+ #                   end
+ #                 end
+ #                 p post['post_url']
+ #                 i.save
+ #               end
+ #             end
+  end
+  desc "Get feedback from twitter"
+  task get_smart: :environment do
+    client = Twitter::REST::Client.new do |config|
+      config.consumer_key        = ENV['TWITTER_CLIENT'] 
+      config.consumer_secret     = ENV['TWITTER_CLIENT_SECRET'] 
+      config.access_token        = ENV['TWITTER_AUTH'] 
+      config.access_token_secret = ENV['TWITTER_AUTH_SECRET'] 
+    end
+
+    images = Image.where(published: true).where(["created_at < ?", 1.days.ago])
+    images.each do |image|
+      id = image.tweet['id']
+      if id
+        tweet = client.status(id).to_json
+        image.tweet = tweet.to_json
+        image.save
+      end
+    end
+  end
   desc "Tweet"
   task tweet: :environment do
     image = Image.where(published: false).order(velocity: :desc).first

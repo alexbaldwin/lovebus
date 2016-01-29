@@ -1,5 +1,9 @@
 Obscenity.configure do |config|
   config.blacklist = [
+    'im-not-your-prince',
+    'catyoutubers',
+    'irakalan',
+    'yoghurtcrumbs',
     'film',
     'filmisnotdead',
     'hipster',
