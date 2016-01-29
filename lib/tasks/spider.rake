@@ -60,45 +60,6 @@ namespace :spider do
           end
         end
 
-##             results.each do |post|
- #             # p post['post_url']
- #             tag_text = String.new
- #             post['tags'].each {|t| tag_text << "#{t} "}
- #             sucks = Obscenity.offensive(tag_text)
- #             if sucks.count == 0 
- #               user_response = conn.get("blog/#{post['blog_name']}.tumblr.com/info", api_key: tumblr_api_key)
- #               if user_response.status.to_s == '200'
- #                 user = user_response.body['response']['blog']
- #               else
- #                 next
- #               end
- #               user_posts = user['posts'].to_i
- #               user_likes = user['likes'].to_i
- #               user_ratio = (user_likes.to_f / (user_posts.to_f + 1)).to_i
-
- #               if user_ratio >= 10
- #                 posted_at = DateTime.parse(post['date'].to_s)
- #                 note_count = post['note_count'].to_i
- #                 i = Image.new(
- #                   :note_count => note_count,
- #                   :media_id => post['id'].to_s,
- #                   :post_url => post['post_url'].to_s,
- #                   :blog_name => post['blog_name'].to_s,
- #                   :media_url => post['photos'][0]['original_size']['url'].to_s,
- #                   :posted_at => posted_at,
- #                   :velocity => 0
- #                 )
- #                 post['tags'].first(5).each do |t|
- #                   tag_name = t.to_s
- #                   if Obscenity.profane?(tag_name)
- #                   else
- #                     i.tag_list.add(tag_name)
- #                   end
- #                 end
- #                 p post['post_url']
- #                 i.save
- #               end
- #             end
   end
   desc "Get feedback from twitter"
   task get_smart: :environment do
