@@ -98,6 +98,44 @@ namespace :spider do
     image.tweet = tweet.to_json
     image.save
   end
+  desc "Grab results from Google Vision"
+  task vision: :environment do
+    vision_key = ""
+    i = Image.last
+    p i.media_url
+    require 'base64'
+    base_image = Base64.encode64(open(i.media_url) { |io| io.read })
+
+    json_call =
+    {
+      "requests":[
+        {
+          "image":{
+            "content": base_image.split("\n").join.split(" ").join
+          },
+          "features":[
+            {
+              "type":"LABEL_DETECTION",
+              "maxResults":1
+            }
+          ]
+        }
+      ]
+    }.to_json
+
+    conn = Faraday.new(url: "https://vision.googleapis.com") do |faraday|
+      faraday.adapter Faraday.default_adapter
+      faraday.response :json
+    end
+
+    response = conn.post do |req|
+      req.url "/v1/images:annotate?key=#{vision_key}"
+      req.headers['Content-Type'] = 'application/json'
+      req.body = json_call
+    end
+   
+    p response
+  end
   desc "Updates ratings"
   task update_score: :environment do
     Image.all.each do |i|
